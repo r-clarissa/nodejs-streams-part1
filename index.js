@@ -1,4 +1,4 @@
-import { Readable, pipeline } from 'node:stream'
+import { Readable, Transform, pipeline } from 'node:stream'
 
 const data = [
   'angel.rodelas@siteminder.com\n',
@@ -12,12 +12,30 @@ const data = [
   'kyla.cruz@siteminder.com\n',
   'lara.pineda@siteminder.com\n',
   'lawrence.lardizabal@siteminder.com\n',
-  'matthew.lucer@siteminder.com\n',
+  'matthew.lucero@siteminder.com\n',
 ]
 
-const readable = Readable.from(data)
+// const readable = Readable.from(data)
+const readable = new Readable({
+  read() {
+    if (data.length === 0) {
+      this.push(null)
+      return
+    }
 
-pipeline(readable, process.stdout, (error) => {
+    this.push(data.shift())
+  },
+})
+
+const transform = new Transform({
+  transform(chunk, enc, cb) {
+    const [name] = chunk.toString('utf8').split('@')
+    cb(null, `${name}\n`)
+    // cb(null, chunk.toString('utf8').toUpperCase())
+  },
+})
+
+pipeline(readable, transform, process.stdout, (error) => {
   if (error) {
     console.log(error.message)
   }
