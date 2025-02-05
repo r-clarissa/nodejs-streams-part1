@@ -3,6 +3,8 @@ const fs = require('fs')
 const csv = require('csvtojson')
 const { Transform } = require('stream')
 const { pipeline } = require('stream/promises')
+const bufferingSObjectStream = require('buffering-object-stream')
+const UserModel = require('./user')
 
 const main = async () => {
   await mongoose.connect('mongodb://localhost:27017/myapp')
@@ -56,16 +58,35 @@ const main = async () => {
     }
   })
 
+  const saveUsers = new Transform({
+    objectMode: true,
+    async transform(users, enc, cb) {
+      // const promises = user.map(user => UserModel.create(user))
+      // await Promise.all(promises)
+      await UserModel.bulkWrite(
+        users.map(user => ({
+          insertOne: {
+            document: user
+          }
+        }))
+      )
+    
+      cb(null)
+    }
+  })
+
   try {
     await pipeline(
       readStream,
       csv({ delimiter: ';' }, { objectMode: true }),
       myTransform,
-      myFilter,
-      convertToNdJson,
-      saveUser
+      // myFilter,
+      bufferingSObjectStream(100),
+      // saveUser,
+      saveUsers
     )
     console.log('Stream ended')
+    process.exit(0)
   } catch (error) {
     console.error('Stream ended with error: ', error)
   }

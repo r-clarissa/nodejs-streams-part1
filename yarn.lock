@@ -896,7 +896,7 @@ buffer@^5.6.0:
 buffering-object-stream@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmjs.org/buffering-object-stream/-/buffering-object-stream-1.0.1.tgz"
-  integrity sha1-QCiJQUgVItPFFgL3ODpe3JNrDoo= sha512-/K/aqA45/g7j+h0CaFyeGWxA7fkwKJ3HwCo51LUxPoOfoyMLh6QzSTVRCj9o/X7skYd34kw1V1hoq3Z3PiJr5A==
+  integrity sha512-/K/aqA45/g7j+h0CaFyeGWxA7fkwKJ3HwCo51LUxPoOfoyMLh6QzSTVRCj9o/X7skYd34kw1V1hoq3Z3PiJr5A==
   dependencies:
     through2 "^2.0.0"
 
