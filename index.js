@@ -3,6 +3,7 @@ const fs = require('fs')
 const csv = require('csvtojson')
 const { Transform } = require('stream')
 const { pipeline } = require('stream/promises')
+const UserModel = require('./user')
 
 const main = async () => {
   await mongoose.connect('mongodb://localhost:27017/myapp')
