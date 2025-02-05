@@ -16,18 +16,37 @@ const data = [
 ]
 
 // const readable = Readable.from(data)
-const readable = new Readable({
-  read() {
-    if (data.length === 0) {
+// const readable = new Readable({
+//   read() {
+//     if (data.length === 0) {
+//       this.push(null)
+//       return
+//     }
+
+//     this.push(data.shift())
+//   },
+// })
+
+class MyReadable extends Readable {
+  constructor(data = [], options) {
+    super(options)
+    this.data = data
+  }
+
+  _read() {
+    if (this.data.length === 0) {
       this.push(null)
       return
     }
 
-    this.push(data.shift())
-  },
-})
+    this.push(this.data.shift())
+  }
+}
+
+const readable = new MyReadable(data)
 
 const transform = new Transform({
+  // encoding: 'hex',
   transform(chunk, enc, cb) {
     const [name] = chunk.toString('utf8').split('@')
     cb(null, `${name}\n`)
