@@ -7,16 +7,11 @@ const main = async () => {
 
   const writeStream = fs.createWriteStream('./data/export.csv')
 
-  readStream.on('data', buffer => {
-    console.log('>>> DATA:\n', buffer.toString())
+  readStream.pipe(writeStream)
 
-    writeStream.write(buffer)
-  })
+  readStream.on('end', () => console.log('Read stream ended'))
 
-  readStream.on('end', () => {
-    console.log('Stream ended')
-
-    writeStream.end('nothing to write ...')
-  })}
+  writeStream.on('finish', () => console.log('Write stream finished'))
+}
 
 main()
