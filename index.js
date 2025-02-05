@@ -2,7 +2,7 @@ const fs = require('fs')
 const csv = require('csvtojson')
 const { Transform } = require('stream')
 const { pipeline } = require('stream/promises')
-
+const { createGzip } = require('zlib')
 
 const main = async () => {
   const readStream = fs.createReadStream('./data/import.csv', {
@@ -38,12 +38,23 @@ const main = async () => {
     }
   })
 
+  const convertToNdJson = new Transform({
+    objectMode: true,
+    transform(user, enc, cb) {
+      const ndjson = JSON.stringify(user) + '\n'
+      cb(null, ndjson)
+    }
+  })
+
   try {
     await pipeline(
       readStream,
       csv({ delimiter: ';' }, { objectMode: true }),
       myTransform,
       myFilter,
+      convertToNdJson,
+      createGzip(),
+      fs.createWriteStream('./data/export.ndjson.gz')
     )
     console.log('Stream ended')
   } catch (error) {
