@@ -7,7 +7,7 @@ const userSchema = mongoose.Schema({
   salary: Number,
   isActive: Boolean,
 }, {
-  timestamps: true
+  timestamps: true,
 })
 
 module.exports = mongoose.model('Users', userSchema)
