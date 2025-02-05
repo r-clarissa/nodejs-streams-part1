@@ -1,17 +1,19 @@
+const mongoose = require('mongoose')
 const fs = require('fs')
 const csv = require('csvtojson')
 const { Transform } = require('stream')
 const { pipeline } = require('stream/promises')
-const { createGzip } = require('zlib')
 
 const main = async () => {
+  await mongoose.connect('mongodb://localhost:27017/myapp')
+
   const readStream = fs.createReadStream('./data/import.csv', {
     highWaterMark: 50,
   })
 
   const myTransform = new Transform({
     objectMode: true,
-    transform(chunk, enc, callback) {
+    transform(chunk, enc, cb) {
       const user = {
         name: chunk.name,
         email: chunk.email.toLowerCase(),
@@ -21,20 +23,20 @@ const main = async () => {
       }
 
       console.log('User: ', user)
-      callback(null, user)
+      cb(null, user)
     }
   })
 
   const myFilter = new Transform({
     objectMode: true,
-    transform(user, enc, callback) {
+    transform(user, enc, cb) {
       if (!user.isActive || user.salary < 1000) {
-        callback(null)
+        cb(null)
         return
       }
 
       console.log('User: ', user)
-      callback(null, user)
+      cb(null, user)
     }
   })
 
@@ -43,6 +45,14 @@ const main = async () => {
     transform(user, enc, cb) {
       const ndjson = JSON.stringify(user) + '\n'
       cb(null, ndjson)
+    }
+  })
+
+  const saveUser = new Transform({
+    objectMode: true,
+    async transform(user, enc, cb) {
+      await UserModel.create(user)
+      cb(null)
     }
   })
 
