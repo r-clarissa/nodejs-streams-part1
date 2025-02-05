@@ -63,7 +63,7 @@ const main = async () => {
       myTransform,
       myFilter,
       convertToNdJson,
-      createGzip(),
+      saveUser,
       fs.createWriteStream('./data/export.ndjson.gz')
     )
     console.log('Stream ended')
