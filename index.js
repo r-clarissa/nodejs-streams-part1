@@ -34,13 +34,20 @@ class MyReadable extends Readable {
   constructor(data = [], options) {
     super({
       ...options,
-      highWaterMark: 16, // binary - no. of bytes; object mode - no. of objects
+      highWaterMark: 128, // binary - no. of bytes; object mode - no. of objects
     })
+
     this.data = data
   }
 
-  _read() {
+  _construct(cb) { // initialize any resources (eg. file descriptors)
+    console.log('readable._construct()')
+    cb()
+  }
+
+  _read(size) {
     let more = true
+    console.log({ size })
     while (this.data.length && more) {
       const data = this.data.shift()
       more = this.push(data)
@@ -51,6 +58,10 @@ class MyReadable extends Readable {
       this.push(null)
       return
     }
+  }
+
+  _destroy() { // stop any resources
+    logger.info('readable._destroy()')
   }
 }
 
