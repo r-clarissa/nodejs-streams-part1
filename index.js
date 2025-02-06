@@ -32,17 +32,25 @@ const data = [
 
 class MyReadable extends Readable {
   constructor(data = [], options) {
-    super(options)
+    super({
+      ...options,
+      highWaterMark: 16, // binary - no. of bytes; object mode - no. of objects
+    })
     this.data = data
   }
 
   _read() {
+    let more = true
+    while (this.data.length && more) {
+      const data = this.data.shift()
+      more = this.push(data)
+      console.log({ data, more })
+    }
+
     if (this.data.length === 0) {
       this.push(null)
       return
     }
-
-    this.push(this.data.shift())
   }
 }
 
