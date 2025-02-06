@@ -17,6 +17,12 @@ const data = [
   'matthew.lucero@siteminder.com',
 ]
 
+// const obj = {
+//   firstName: 'Angel',
+//   lastName: 'Rodelas',
+//   domain: 'siteminder.com',
+// }
+
 // const readable = Readable.from(data)
 // const readable = new Readable({
 //   read() {
@@ -57,27 +63,37 @@ const readable = new MyReadable(data)
 // })
 
 class myTransform extends Transform {
+  constructor(options = {}) {
+    super({
+      ...options,
+      readableObjectMode: true,
+    })
+  }
+
   _transform(chunk, enc, cb) {
-    const [name] = chunk.toString('utf8').split('@')
-    cb(null, name)
+    const [name, domain] = chunk.toString('utf8').split('@')
+    cb(null, { name, domain })
   }
 }
 
 const transform = new myTransform()
 
 class MyWritable extends Writable {
-  constructor(logger, options) {
-    super(options)
+  constructor(logger, options = {}) {
+    super({
+      ...options,
+      objectMode: true,
+    })
     this.logger = logger
   }
 
-  _write(chunk, enc, cb) {
-    this.logger.info(chunk.toString('utf8'))
+  _write(data, enc, cb) {
+    this.logger.info(JSON.stringify(data))
     cb()
   }
 }
 
-const writable = new MyWritable(logger)
+const writable = new MyWritable(logger, { objectMode: true })
 
 pipeline(readable, transform, writable, (error) => {
   if (error) {
