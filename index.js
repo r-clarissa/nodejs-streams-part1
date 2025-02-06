@@ -72,7 +72,12 @@ class myTransform extends Transform {
 
   _transform(chunk, enc, cb) {
     const [name, domain] = chunk.toString('utf8').split('@')
-    cb(null, { name, domain })
+    const [first, last] = name.split('.')
+    cb(null, {
+      first: `${first.charAt(0).toUpperCase()}${first.slice(1)}`,
+      last: `${last.charAt(0).toUpperCase()}${last.slice(1)}`,
+      domain,
+    })
   }
 }
 
