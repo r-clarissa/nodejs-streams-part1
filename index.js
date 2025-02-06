@@ -17,12 +17,6 @@ const data = [
   'matthew.lucero@siteminder.com',
 ]
 
-// const obj = {
-//   firstName: 'Angel',
-//   lastName: 'Rodelas',
-//   domain: 'siteminder.com',
-// }
-
 // const readable = Readable.from(data)
 // const readable = new Readable({
 //   read() {
@@ -89,6 +83,7 @@ class MyWritable extends Writable {
       ...options,
       objectMode: true,
     })
+
     this.logger = logger
   }
 
@@ -96,9 +91,30 @@ class MyWritable extends Writable {
     this.logger.info(JSON.stringify(data))
     cb()
   }
+
+  _final(cb) {
+    this.logger.info('writable_final()')
+    cb()
+  }
 }
 
 const writable = new MyWritable(logger, { objectMode: true })
+
+readable.on('end', () => {
+  logger.info('readable: end event')
+})
+
+transform.on('end', () => {
+  logger.info('transform: end event')
+})
+
+transform.on('finish', () => {
+  logger.info('transform: finish event')
+})
+
+writable.on('finish', () => {
+  logger.info('writable: finish event')
+})
 
 pipeline(readable, transform, writable, (error) => {
   if (error) {
