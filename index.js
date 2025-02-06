@@ -1,18 +1,20 @@
-import { Readable, Transform, pipeline } from 'node:stream'
+import { Readable, Transform, Writable, pipeline } from 'node:stream'
+
+import logger from './logger.js'
 
 const data = [
-  'angel.rodelas@siteminder.com\n',
-  'ariel.magno@siteminder.com\n',
-  'carl.angeles@siteminder.com\n',
-  'christian.banez@siteminder.com\n',
-  'clarissa.rodriguez@siteminder.com\n',
-  'jan.estilo@siteminder.com\n',
-  'dominic.malonjao@siteminder.com\n',
-  'john.manalang@siteminder.com\n',
-  'kyla.cruz@siteminder.com\n',
-  'lara.pineda@siteminder.com\n',
-  'lawrence.lardizabal@siteminder.com\n',
-  'matthew.lucero@siteminder.com\n',
+  'angel.rodelas@siteminder.com',
+  'ariel.magno@siteminder.com',
+  'carl.angeles@siteminder.com',
+  'christian.banez@siteminder.com',
+  'clarissa.rodriguez@siteminder.com',
+  'jan.estilo@siteminder.com',
+  'dominic.malonjao@siteminder.com',
+  'john.manalang@siteminder.com',
+  'kyla.cruz@siteminder.com',
+  'lara.pineda@siteminder.com',
+  'lawrence.lardizabal@siteminder.com',
+  'matthew.lucero@siteminder.com',
 ]
 
 // const readable = Readable.from(data)
@@ -45,16 +47,39 @@ class MyReadable extends Readable {
 
 const readable = new MyReadable(data)
 
-const transform = new Transform({
-  // encoding: 'hex',
-  transform(chunk, enc, cb) {
-    const [name] = chunk.toString('utf8').split('@')
-    cb(null, `${name}\n`)
-    // cb(null, chunk.toString('utf8').toUpperCase())
-  },
-})
+// const transform = new Transform({
+//   // encoding: 'hex',
+//   transform(chunk, enc, cb) {
+//     const [name] = chunk.toString('utf8').split('@')
+//     cb(null, `${name}\n`)
+//     // cb(null, chunk.toString('utf8').toUpperCase())
+//   },
+// })
 
-pipeline(readable, transform, process.stdout, (error) => {
+class myTransform extends Transform {
+  _transform(chunk, enc, cb) {
+    const [name] = chunk.toString('utf8').split('@')
+    cb(null, name)
+  }
+}
+
+const transform = new myTransform()
+
+class MyWritable extends Writable {
+  constructor(logger, options) {
+    super(options)
+    this.logger = logger
+  }
+
+  _write(chunk, enc, cb) {
+    this.logger.info(chunk.toString('utf8'))
+    cb()
+  }
+}
+
+const writable = new MyWritable(logger)
+
+pipeline(readable, transform, writable, (error) => {
   if (error) {
     console.log(error.message)
   }
