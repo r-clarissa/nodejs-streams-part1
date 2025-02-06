@@ -1,4 +1,5 @@
-import { Readable, Writable, pipeline, Transform } from 'node:stream'
+import { Readable, Writable, Transform } from 'node:stream'
+import { pipeline } from 'stream/promises'
 import logger from './logger.js'
 const data = ['Kyla 1', 'Eyds 2', 'Jason 3', 'UPLB 4', 'Coleen 5', 'Clarissa 6', 'JD 7', 'Angel 8', 'Lawrence 9', 'Christian 10', 'Last Guy']
 // const data2 = ['Kyla', 'Eyds', 'Jason', 'UPLB', 'Coleen', 'Clarissa', 'JD', 'Angel', 'Lawrence', 'Christian', 'Last Guy']
@@ -85,13 +86,26 @@ writable.on('finish', () => {
 //     callback(null, `${name}\n`)
 //   }
 // })
-pipeline(readable2, transform, process.stdout, (error) => {
-  if (error) {
-    console.log(error.message)
+
+class FakeStdOut extends Writable {
+  _write(chunk, enc, cb) {
+    process.stdout.write(chunk)
+    cb()
   }
-  console.log('Done')
-  // console.log('12312312')
-})
+}
+
+const stdout = new FakeStdOut()
+
+pipeline(readable2, transform, stdout)
+  .catch((error) => {
+    if (error) {
+      logger.error(error.message)
+    }
+  }).finally(() => {
+    logger.info('Done')
+    logger.info('123')
+  })
+
 // console.log("3123123")
 // NOTES: pipelined streams needs to have same same mode: i.e. object
 // but if you are not using pipeline, i.e. .on 'data' , .write
